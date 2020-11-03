@@ -2,7 +2,7 @@
 title: "51% of the Popular Vote Goes to Trump According to Socioeconomic Factors"
 subtitle: "A multilevel linear regression approach towards the election outcome"
 author: "Alex (Zikun) Xu and Yitian Zhao"
-thanks: "Code and data are available at: https://github.com/ytz1211/sta304_ps4"
+thanks: "Code and data are available at: https://github.com/ytz1211/ps4_sta304"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 ---
 
@@ -237,7 +237,7 @@ keyvoters <- filter(reduced_data, age != "18 to 29" &
                      household_income == "$175,000 to $199,999" |
                      household_income == "$20,000 to $249,999" |
                      household_income == "$250,000 and above"))
-# 
+# Adding in a voter preference distribution with key elements
 ggplot(keyvoters, aes(x = vote_2020))+
   geom_bar()+
   labs(title = "Fig 12. Preference Among Voters With Key Factors", x = "Candidate", y = "Number of People")
@@ -249,20 +249,23 @@ As discussed in the model section, we see there are quite a few variables that h
 
 # Discussion
 
-Figures 7-11 reveals the proportions of the different variables which we use as explanatory variables to help us predict the outcome of the 2020 U.S. election. From figure 7, we see that voters that are over 60 years old have the most amount of votes compared to the other age groups which are fairly similar in terms of distribution between voter's age. This differs by a bit when we compare figure 7 to figure 2, the voters of age 60+ are less in proportion to other age groups in figure 2. The results of the two independent data sets are different due to the sample of their frame are different and data collection methods are different as well. The results of figure 11 and figure 5 (Census Region distribution) were also slightly different with the same reasoning as before. Overall, the results of the same variables in the two distinct data sets (survey data vs post stratification data) are mostly similar indicating that both sampling methods produces mostly equivalent results. Post stratification data set adjusts sample weights so that they sum to the population size within each stratum thus decreasing bias and variance by including the
- non-responses and underrepresented groups in the ACS sample population. 
+Our model consists of multilevel logistic linear regression with five main independent categorical variables that help us predict a binary outcome, which is the percentage of votes that Donald Trump will receive in the 2020 U.S .Presidential Election. With the intent of predicting the outcome of an election, we chose these five variables – age, education, income, ethnicity, and region – to be the most influential factors that determine the final decision of a registered voter. Given the ACS dataset, it did not provide the independent variable that we are looking for, which is the final vote decision of the respondent. In order to predict final outcomes given the demographic characteristics of respondents in the ACS dataset, we chose to create a generalized linear regression model using the UCLA dataset and apply it to same variables within the ACS dataset. This results in a more accurate representation of the voters across America, since the post-stratification dataset minimizes bias and variance, and also makes a more accurate prediction of the election. 
 
-## First discussion point
+When we look at the different demographics of registered voters, we found that voters that are between 30 and 59 years of age have the highest likelihood to vote for Trump due to the highest estimate of coefficient in the model and the extremely low p-values justifying that these coefficients of the model are highly significant. This is due to Trump’s promises to protect current Medicare, Social Security plans, and other government benefits of older voters. This has led to large support from middle-aged working adults; but on the other hand, as of June 2020, voters that are 60+ of age have not been satisfied with how Trump is handling the on-going pandemic, especially with the increase of mortality rates among elders and the inability to deliver effective medicine/treatment for the COVID-19 virus. This has led to less people in favor of Trump’s reelection within elders, which is reflected in our model with second lowest estimate of the age-group coefficient. For young voters between 18 and 29, have a different opinion of Trump’s reelection. This could be due to the fact that the economy and finance is generally the young voters main concern, while health and social insurance is the main concern for older voters. On the other hand, Biden has been proposing various plans for student debt and education policies, such as making college/university tuition free for all families with income less than $125,000 and targeting additional financial support for low to middle class individuals. These propositions justify why voters for Biden are more than Trump for the younger generation as financial stress may potentially be relaxed in terms of student debt. 
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+Given the Biden’s propositions of loosening financial stress for younger voters, we transition into the next topic, education. We initially thought that the education level of respondents plays a significant role when voters make the final decision, which we justified by looking at the demographics of the 2016 U.S. election, where 48% of college educated white voters supported Trump and comparatively 66% of non-college educated white voters did not. As we explored the regression model of the given dataset, we concluded that all the education explanatory variables were insignificant with high p-values. Meaning that no matter if the voter did or did not complete high school or university has little affect as to which presidential candidate, he/she would vote for. While we can say that college students that are constraint by student debt would prefer Biden’s campaign title “The Biden Plan for Education Beyond High-School”, we found that other characteristics of the voter are more significant than their education level when making a voting decision. 
 
-## Second discussion point
+As income-gap distinction increases over the years, policies in terms of taxes are different between the two candidates. Former vice-president Joe Biden proposed to not raise taxes on Americans with an annual income of \$400,000, yet raising income tax rates to almost 40% for those who make over that threshold income. Middle income Americans could also take an indirect hit from Biden’s proposed tax policies since large corporations would be taxed more heavily, corporations may balance this cost by potentially increasing prices to consumers or lower wages of workers. Trump promised to cut taxes by an additional 300 billion by the end of his second term, primarily for the wealthy and corporate Americans. These two very different proposed tax policies impact the decision of voters, since the amount of annual income voters make directly affect the amount of tax, they are willing to pay. Simply concluding that people with a higher income are more likely to vote for Trump and people with a lower income are more likely to vote for Biden. From our regression, we can justify this result by looking at the house-hold income estimates and their corresponding p-values to see if it is significant enough to include in our model. Since our model targeted the likeliness to vote for Trump, we see that from the coefficients, voters with an income of less than \$100,000 have very high p-values meaning that it is inconclusive of their voting result. On the other hand, people with household incomes of over $100,000 have significantly small p-values with a positive coefficient meaning that it is very likely that these individuals will vote for Trump. 
 
-## Third discussion point
+As Trump continue to revoke policies implemented by the previous President, Barack Obama, including policies that were aimed to ensure the safety and minimize racial disparity of minorities amongst school, through our model we can see that voters that have the ethnicity of either Asian, African American, Pacific Islander, or an other race,  will not vote for Trump. This is justified by the negative coefficients of these variables and the significantly low p-values, indicating that voter’s that are of the race mentioned above will likely not vote for Trump. While majority of Trump supporters are White, our model suggests that the coefficient of the voter’s race being white, has no significance due to the high p-value of 77.3%. This means that voters that are of the white descent will not have a clear distinction in terms of whom they will be voting for. 
+
+In terms of demographic region of the U.S., the southern region is mainly composed of red states whose voters predominantly choose the Republican party such as Alabama, Kentucky, Texas, Mississippi etc. Based on the results of past elections, the southern region is mostly comprised of states which are carried by the Republicans in the past four elections. This outcome can be seen by our model where the census region of the south being the only significant coefficient with a positive coefficient and a significantly small p-value.  This means that voters of the southern region are more likely going to vote for Trump than Biden based on their demographic region and what the state mostly supports. On the other hand, the other census regions have a high p-value meaning that voters of the other regions are not significant enough to determine their voting outcome. 
 
 ## Weaknesses and next steps
 
-Weaknesses and next steps should also be included.
+A prominent weakness in our study consists of the fact that a conclusion on the overall popular vote doesn't necessarily coincide with the electoral votes. While the popular vote might be for Trump as concluded from our model, we are only conducting our survey on individual voter responses which makes it difficult to structure accordingly with electoral votes. This sort of drawback definitely hinders the confidence in our conclusion which is why a potential next step would be to organize the data in according to electoral districts and ridings for next time. 
+
+In addition, we also used a general linear model to make our forecasting. While this displays a relationship between all our independent variables with voter preference, it is hard to define clear relationships among our variables which could provide further insight into our conclusion. This especially coincides with our first weakness since a potential angle of approach would have been to analyze the other socioeconomic factors with our region variable to get a sense of confidence for the candidates among different areas of the US. Manipulating the data this way would've strengthened our conclusion for a candidate as we can pinpoint where their votes are coming from and the type of supporters in different locations. Ultimately, the United States is a very large and diverse country with a variety different sub-cultures and issues too specific to generalize the country as a whole.
 
 
 # References
@@ -282,3 +285,22 @@ Weaknesses and next steps should also be included.
   Manipulation. R package version 1.0.2. https://CRAN.R-project.org/package=dplyr
   
 - H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
+
+- Alexander, C., Dahl, S., & Weidman, L. (1997). Making Estimates from the American
+Community Survey. JSM Proceedings, Social Statistics Section (pp. 88-97). Alexandria,
+VA: American Statistical Association.
+
+- Ball, M. (2016, October 25). Trump's Graying Army. Retrieved November 02, 2020, from https://www.theatlantic.com/politics/archive/2016/10/trumps-graying-army/505274/
+
+- Daugherty, G. (2020, October 26). Biden's Plan for Student Debt and Education Policy. Retrieved November 03, 2020, from https://www.investopedia.com/biden-s-plan-for-student-debt-and-education-policy-5084094
+
+- Gandel, S. (2020, October 30). Comparing the Biden and Trump tax plans: Will you pay more? Retrieved November 03, 2020, from https://www.cbsnews.com/news/biden-tax-plan-comparison-trump/
+
+- Green, E., &amp; Benner, K. (2018, December 17). Trump Officials Plan to Rescind Obama-Era School Discipline Policies. Retrieved November 03, 2020, from https://www.nytimes.com/2018/12/17/us/politics/trump-school-discipline.html 
+
+- Gregorian, D. (2019, July 20). NBC News poll of the South: Voters' support for Trump grows, residents see race relations improving. Retrieved November 03, 2020, from https://www.nbcnews.com/politics/politics-news/nbc-news-poll-south-voters-support-trump-grows-residents-see-n1031851
+
+
+- Harris, S. (2018, November 12). America Is Divided by Education. Retrieved November 03, 2020, from https://www.theatlantic.com/education/archive/2018/11/education-gap-explains-american-politics/575113/
+
+- https://www.census.gov/programs-surveys/acs/methodology/design-and-methodology.html
