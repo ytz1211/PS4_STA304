@@ -2,8 +2,7 @@
 title: "51% of the Popular Vote Goes to Trump According to Socioeconomic Factors"
 subtitle: "A multilevel linear regression approach towards the election outcome"
 author: "Alex (Zikun) Xu and Yitian Zhao"
-thanks: "Code and data are available at: https://github.com/ytz1211/ps4_sta304"
-date: "`r format(Sys.time(), '%d %B %Y')`"
+date: "November 2, 2020"
 ---
 
 ```{r setup, include=FALSE}
@@ -11,6 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 ```
+
+# Find our Work Here
+
+Code and data are available at: https://github.com/ytz1211/ps4_sta304
 
 # Abstract
 
