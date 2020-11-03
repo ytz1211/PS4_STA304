@@ -1,0 +1,284 @@
+---
+title: "51% of the Popular Vote Goes to Trump According to Socioeconomic Factors"
+subtitle: "A multilevel linear regression approach towards the election outcome"
+author: "Alex (Zikun) Xu and Yitian Zhao"
+thanks: "Code and data are available at: https://github.com/ytz1211/sta304_ps4"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+```
+
+# Abstract
+
+With the upcoming 2020 US Election this Tuesday, many people around the world are looking forwards to the presidential race between Trump and Biden. We are analyzing this election and making a forecasting to predict who is most likely to win the election based on socioeconomic factors such as the age, education, income, region, and race of voters. Our data is retrieved from UCLA Nationscape Survey and the American Community Survey to create a multilevel regression with post stratification. We will have a chance to see the attitudes of American voters within the past 2 years to determine how their values have changed to decide on this year's election.
+
+# Introduction
+
+In this paper, we used various demographics of the American population to help model and predict the outcome of the 2020 U.S. presidential election. The question lies as to which candidate will fall in position as the head of the U.S. government, Donald Trump vs. Joe Biden. This is the sort of election that will impact the future of the United States both in the short-term, especially with the COVID-19 pandemic situation, as well as the long term in determining the reputation and impact the United States will have on a global scale. The world's eyes will be tuning in on November 3, 2020 to watch the outcome of the election as it is going incredibly close between the two controversial candidates. 
+
+As students trying to get a better sense of the election outcome, it is incredibly difficult to have any grounded confidence in either one of the candidates due to the overabundance of media sources with widely different opinions on the election. There is added complexity in gaining a clear result forecasting due to the complicated layers involving states and ridings which makes it difficult to get an outcome for the whole election by only observing individual voter preferences.
+
+With that in mind, we want to make a forecasting for the 2020 election based on socioeconomic variables including age, education, race, income, and region to determine the popular vote. The data that we are using to determine a forecasting include the UCLA Nationscape data set from June 2020 and the 2018 American Community Survey from IPUMS. We are using the candidate preference along with the demographic information from the Nationscape data in order to create multilevel linear regression for the odds of Trump winning and then applying this model on the ACS to obtain a forecasting. Our results show that there the popular vote is slightly in Trump's favor with the most significant variables being voters in older age groups, voters with high income, voters in the Southern census region, and voters who belong to a non-white race group. Most of these factors make a positive contribution to our model with the exception of the preference of non-white voters.
+
+Since there are so many different angles to approach studying the US election, we have to bear in mind that our forecasting is by no means a definitive conclusion for who is going to win. Especially since our results show that there is only a slight favor for Trump's chances, we have to understand that there remains many more variables that we did not take into account that might sway our conclusion towards either candidate. Nonetheless, we are taking a socioeconomic approach towards creating our statistical model. We will first discuss the data, where it came from, and what a preliminary look at the variables might suggest. We then create our model and discuss its significance. Finally, we will discuss the results from our model and why it may turn out the way it did. For future reference, there remain many approaches towards studying something as complex as the federal election in any nation. Our work in this paper helps us gain a better understanding of an outcome with respect to the variables we choose to approach it from.
+
+
+
+# Data
+For our data, we are using the American Community Survey (ACS) and the UCLA Nationscape Dataset. We will discuss the key features and methodology for each of these surveys.
+
+## Survey Dataset
+The individual-level survey dataset was obtained from the collaboration between the Democracy fund Voter Study Group and the UCLA Nationscape’s public opinion survey. Specifically, UCLA Political Scientists Chris Tausanovitch and Lynn Vavreck. The Nationscape samples are obtained from Lucid, a market research platform which is an online platform for survey respondents. The results of the questionnaire by Lucid are then directly sent to a survey software operated by the UCLA Nationscape team.
+
+The Nationscape survey has a target audience of American citizens (reasonably assuming) and conducted over 500,000 online interviews from the periods of July to December in 2020. This survey commenced in July 2019 and has approximately 25,000 respondents per month. The demographics of the survey results are age, gender, ethnicity, region, income, and education, which are used as explanatory variables to help model our outcome. The Nationscape survey data are weighted and is generated for each week’s survey. The targets of the weights, conducted by Nationscape, is derived from the 2017 American Community Survey (ACS) of Census Bureau. 
+A key feature that they included was the results of the 2016 presidential vote results to explain how past election results were affected by various demographics. This helps us analyze based on past results, the possibility of the respondent voting for the same candidate – Donald Trump. Weaknesses of this survey include divergence between Nationscape datasets and government provided datasets may be dependent on the type of questions asked. Respondents have the choice of not answering certain questions, such as income, thus non-respondents are ultimately not weighted in the targeted weights for this survey.  
+
+In order to present the data in a detailed way, we provided seven plots of the seven different variables used in the data set – five of those variables are used for modelling, specifically, age group, education level, household income, ethnicity, and region of respondents. In figure 6 and table 4, we showed the proportion of registered respondents that have the ability to vote in the upcoming election and we found that over 10% of survey respondents are either not registered to vote or do not know the eligibility of their registration status yet. That means that these respondent’s answers for the other variables such as their education level, ethnicity, household income etc… are not significant towards the prediction of the 2020 presidential election result. Therefore, these respondents were omitted from the dataset in order to provide a model with lower bias to make a better prediction of the upcoming election outcome. From figures 1 to 5 and tables 1 to 3, we plotted the variables that will be used for modelling of the cleaned Nationscape dataset to have a better understanding of the variable compositions. Surprisingly, we find that in Figure 1, slightly more respondents chose to vote for Joe Biden than Donald Trump (50.3% vs 49.7%) which contradicts the result that our model predicted. Other demographics such as age group, gender, ethnicity, and census region found from figure 2 to figure 6 provides a visual representation of the actual data which are used for modeling later on. 
+
+
+```{r, echo = FALSE}
+#Plot how many votes for each decision of the respondent
+ggplot(reduced_data, aes(x = vote_2020))+
+  geom_bar()+
+  labs(title= "Fig 1. Who Respondents are Voting For - from the Nationscape survey", x = "Vote Decision", y = "Number of Votes")
+
+#Make a table showing numerical proportions of the data
+
+print("Table 1. Proportion of votes for each decision")
+prop.table(table(reduced_data$vote_2020))
+```
+
+```{r, Age distribution, echo = FALSE}
+#Create a pie chart for all the separate regions
+
+#Create a table filtering the counts of each age group
+count_age <- count(reduced_data, age)
+
+#Create a percentage of with each age group
+pct <- round(count_age$n/sum(count_age$n)*100)
+count_age$age <- paste(count_age$age, pct,sep=", ") # add percents to labels
+count_age$age <- paste(count_age$age,"%",sep="") # add % to labels
+pie(count_age$n,count_age$age, main = "Fig 2. Age Group Regions of Voters - from the Nationscape survey")
+
+```
+
+```{r, Distribution of Genders, echo = FALSE, message=FALSE}
+
+#Plot the gender distribution
+ggplot(raw_data, aes(x = gender))+
+  geom_bar()+
+  labs(title = "Fig 3. Gender of Respondents - from the Nationscape survey", x = "Genders", y = "Number of People")
+
+#Make a table showing numerical proportions of the data
+print("Table 2. Proportion of Gender")
+prop.table(table(raw_data$gender))
+```
+
+```{r, Ethnicity Distribution, echo=FALSE}
+
+#Plot ethnicity distribution of respondents
+ggplot(reduced_data, aes(x = race_ethnicity))+
+  geom_bar()+
+  labs(title = "Fig 4. Ethnicity of Respondents - from the Nationscape survey", x = "Race", y = "Number of People")
+
+print("Table 3. Proportion of Race Ethnicity")
+prop.table(table(reduced_data$race_ethnicity))
+
+```
+
+```{r, Census regions of the respondents, echo=FALSE}
+#Count how many different voters in each census regions
+census <- count(reduced_data, census_region)
+
+pct <- round(census$n/sum(census$n)*100)
+census$census_region <- paste(census$census_region, pct, sep=", ") # add percents to labels
+census$census_region <- paste(census$census_region,"%",sep="") # ad % to labels
+#Create a pie chart for all the separate regions
+pie(census$n,census$census_region, main = "Fig 5. Census Regions of Voters - from the Nationscape survey")
+
+
+```
+
+```{r, eligibility to vote, echo=FALSE, message=FALSE}
+#Plot the registration status of the respondents from the Nationscape Survey
+raw_data %>%
+  ggplot(aes(x= registration))+
+  geom_bar()+
+  labs(title = "Fig 6. Registration of Respondents - from the Nationscape survey", x = "Registration", y = "Number of People")
+print("Table 4. Proportion of Registered voters")
+prop.table(table(raw_data$registration))
+```
+
+
+## Post-Stratification Dataset
+The Post Stratification dataset was gathered from the American Community Survey who has a target audience of the American resident population, living in housing units and group quarters (nursing, group homes, workers' dormitories, etc.) facilities. The ACS survey data for this paper was provided by IPUMS USA on their website, and we specifically used the 2018 ACS sample surveys drawn from federal censuses. The 2018 ACS Survey uses a series of monthly weighted samples to result in annual estimates with a 1-in-100 ratio national random sample of the population. 
+
+The population of this dataset is basically any person who is living in the United States. The sample frame, in other words the source of the material of which the ACS sample data was drawn from, is from the Master Address File (MAF) of Census Bureau. The MAF, that was initially created for Census 2000, uses multiple sources including the 1990 Address Control File, the United States Postal Service Delivery Sequence File and various computer assisted clerical field operations. The intent of the MAF was to source the American Community Survey, other Census Bureau demographic surveys, and the decennial census. The ACS data set samples approximately 2.5% of the expected number of residents in “Group Quarter” facilities. They aim to collect a sample of 3.54 million residents in the United States and 36,000 in Puerto Rico. There are sixteen designated sampling strata which consists of sampling within geographic entities such as counties, school districts, and other areas with functioning local governments. Blocks within each sampling entity fall within one of the sampling strata organized by size. Post-stratification is used to make sure that blocks assigned within smaller stratum are relatively represented and justified in comparison to the larger stratum. 
+
+The ACS consists of 12 monthly independent samples, sampling by address with personal visits in its first main stage of sample selection, then by phone, and the final phase by mail or the internet. If additional samples are required, the process is done for new addresses to be categorized within required stratums and sampling entities. Ever since 2006, the ACS has interviewed the resident population who are living in both housing units (HUs) or group quarters (GQ) – which are classified as “living quarters” by the Census Bureau. Data collection for housing units, done by Census Bureau are carried out through internet survey, mail, telephone, or personal visit. Non-responses or unreachable addresses are then reattempted for phone in contact in a second stage of sample collection later on, either followed up with computer assisted telephone interviewing or by computer-assisted personal interviewing. 
+
+Some key features of this dataset are that many demographic characteristics are covered through the survey and since the sample selection is updated monthly, most recent data are updated with the exception of the current month. The Census Bureau provides the frame of the ACS survey and produces/publishes up to three sets of estimates based on its total geographical population. In particular, the ACS uses ratio estimation to take advantage of independent population estimates by sex, age, race, and Hispanic origin, and estimates of total housing units produced by statistical estimates performed by the Census Bureau. 
+
+Since the post-stratification data set differs from the survey dataset from the previous section, our team had to filter out the variables and clean them in order to match the structure of both data sets. We mainly chose five variables to use in our modelling which individually are: age group each respondent is categorized in, highest education of the respondent, race ethnicity of the respondent, and household income of the respondent, and which region of America the respondent was from.
+
+```{r, Age distribution ACS, echo = FALSE}
+#Create a pie chart for all the age groups
+
+#Create a table filtering the counts of each age group
+age_count <- count(postvars, age)
+
+#Create a percentage of with each age group
+pct <- round(age_count$n/sum(age_count$n)*100)
+age_count$age <- paste(age_count$age, pct,sep=", ") # add percents to labels
+age_count$age <- paste(age_count$age,"%",sep="") # add % to labels
+pie(age_count$n,age_count$age, main = "Fig 7. Age Group Regions of Voters")
+
+```
+
+```{r, Ethnicity distribution ACS, echo = FALSE}
+#Create a pie chart for ethnicity of voters
+
+#Create a table filtering the counts of race
+race_count <- count(postvars, race_ethnicity)
+
+pct <- round(race_count$n/sum(age_count$n)*100)#Create a percentage of with race
+race_count$race_ethnicity <- paste(race_count$race_ethnicity, pct,sep=", ") # add percents to labels
+race_count$race_ethnicity <- paste(race_count$race_ethnicity,"%",sep="") # add % to labels
+pie(race_count$n,race_count$race_ethnicity, main = "Fig 8. Race/Ethnicity of Voters")
+
+```
+
+```{r, Education distribution, echo = FALSE}
+#Create a pie chart for all the separate regions
+
+#Create a table filtering the counts of each age group
+edu_count <- count(postvars, education)
+
+#Create a percentage of with each age group
+pct <- round(edu_count$n/sum(edu_count$n)*100)
+edu_count$education <- paste(edu_count$education, pct,sep=", ") # add percents to labels
+edu_count$education <- paste(edu_count$education,"%",sep="") # add % to labels
+pie(edu_count$n,edu_count$education, main = "Fig 9. Education Level of Voters")
+
+```
+
+
+```{r, income distribution, echo=FALSE}
+
+#Plot household income distribution of respondents
+ggplot(postvars, aes(x = household_income))+
+  geom_bar()+
+  labs(title = "Fig 10. Income of Respondents", x = "Income", y = "Number of People")+
+  theme(axis.text.x=element_text(angle=45,hjust=1,vjust=1))
+```
+
+```{r, Census regions of the respondents ACS, echo=FALSE}
+#Count how many different voters in each census regions
+region_count <- count(postvars, census_region)
+
+pct <- round(region_count$n/sum(region_count$n)*100)
+region_count$census_region <- paste(region_count$census_region, pct, sep=", ") # add percents to labels
+region_count$census_region <- paste(region_count$census_region,"%",sep="") # ad % to labels
+#Create a pie chart for all the separate regions
+pie(region_count$n,region_count$census_region, main = "Fig 11. Census Regions of Voters")
+
+
+```
+
+
+
+
+
+# Model
+
+
+```{r, echo=FALSE}
+# GLM of the UCLA Nationscape Dataset using age, education, household income, race, and census region
+UCLAglm <- glm(data = reduced_data, as.numeric(vote_2020 == "Donald Trump") ~ age + education + household_income + race_ethnicity + census_region, family = "binomial")
+summary(UCLAglm)
+```
+
+```{r, echo=FALSE, message=FALSE}
+# Creating our cells and forecasting a result based on our predictions
+cells <- count(group_by(postvars, age, household_income, census_region, race_ethnicity, education))
+cells <- mutate(cells, proportion = n/nrow(postvars))
+predictions <- predict.glm(UCLAglm, cells, type = "response")
+cellpredict <- cbind(cells, predictions)
+sum(cellpredict$proportion * cellpredict$...8)
+confint(UCLAglm)
+```
+
+We ran a generalized linear regression model to form a relationship between a voter's preferred candidate against their socioeconomic factors including age, income, education, region, and race. This would regress one's choice of presidential candidate as the dependent variable against our 5 independent variables mentioned as such:
+
+\begin{equation}
+Z_\hat{Y} = \beta_0 + \beta_1 Z_{X_1} + \beta_2 Z_{X_2} + \beta_3 Z_{X_3} + \beta_4 Z_{X_4} + \beta_5 Z_{X_5}
+\end{equation}
+
+Our Z_y value represents the candidate choice while Z_x1, Z_x2, Z_x3, Z_x4, and Z_x5 correspond to age, income, region, race, and education respectively. Our independent variables are regressed as factors since education, region, and race don't make sense to be treated as quantitative variables and income was surveyed in brackets which leaves us without exact values for an individual. Age is sorted and organized into brackets and regressed as a factor in order to remain consistent with the other variables and allow for our trained model to be used for forecasting with the post stratification data.
+
+When considering other models that could potentially be used, we decided to choose using a generalized linear since the nature of this study provides us with independent responses for our variables. While we are limited with analyzing the interactions between our independent variables, we are not restricted to using variables with normally distributed errors which works out in our case of regressing by factors. We are also only interested in looking at the result of two total outcomes for our candidate preference so we are using a binomial model. When considering an alternative such as Bayesian regression, it is harder to make a strong conclusion from our model only using non-informative priors as we do not have priors for our data.
+
+When we fit our model trained from the UCLA data onto the ACS data, we get a forecasting that Donald Trump will get 51% of the popular vote over Joe Biden. Looking at the variables with significantly small p-values of in our model, we generally see that older voters (30+), high income earners ($100k+), race groups (except white), and the Southern census region are the factors making the most impact. Taking a look at the confidence intervals for these significant factors, we also see that a majority of them lie within positive values suggesting that there is a strong case to be made for the voting popularity being in Trump's favor.
+
+
+# Results
+
+```{r, echo=FALSE, message=FALSE}
+
+keyvoters <- filter(reduced_data, age != "18 to 29" &
+                    census_region == "South" & 
+                    (household_income == "$100,000 to $124,999" | 
+                     household_income == "$125,000 to $149,999" |
+                     household_income == "$125,000 to $149,999" |
+                     household_income == "$175,000 to $199,999" |
+                     household_income == "$20,000 to $249,999" |
+                     household_income == "$250,000 and above"))
+# 
+ggplot(keyvoters, aes(x = vote_2020))+
+  geom_bar()+
+  labs(title = "Fig 12. Preference Among Voters With Key Factors", x = "Candidate", y = "Number of People")
+
+```
+
+
+As discussed in the model section, we see there are quite a few variables that have significant positive impacts on our model due to their small p-values. This voter preference (Fig 12) comparison only includes voters who are older (30+), have an income of over $100k per year, and live in the southern census region. We see that there is a significantly greater proportion of voters who favor Trump over Biden. Despite more people favoring Biden in the entire sample, the factors that greatly affect the model clearly shows a significant number of people prefer Trump. Other factors that should be significant include the non-white race groups, which seem to mainly negatively impact the model, make a very small amount of the voter base as seen in the race group distribution (Fig 4) in the data section. Therefore, a slight favoring towards Trump's re-election makes sense when so many voters fitting the significant demographics prefer him over Biden.
+
+# Discussion
+
+Figures 7-11 reveals the proportions of the different variables which we use as explanatory variables to help us predict the outcome of the 2020 U.S. election. From figure 7, we see that voters that are over 60 years old have the most amount of votes compared to the other age groups which are fairly similar in terms of distribution between voter's age. This differs by a bit when we compare figure 7 to figure 2, the voters of age 60+ are less in proportion to other age groups in figure 2. The results of the two independent data sets are different due to the sample of their frame are different and data collection methods are different as well. The results of figure 11 and figure 5 (Census Region distribution) were also slightly different with the same reasoning as before. Overall, the results of the same variables in the two distinct data sets (survey data vs post stratification data) are mostly similar indicating that both sampling methods produces mostly equivalent results. Post stratification data set adjusts sample weights so that they sum to the population size within each stratum thus decreasing bias and variance by including the
+ non-responses and underrepresented groups in the ACS sample population. 
+
+## First discussion point
+
+If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+
+## Second discussion point
+
+## Third discussion point
+
+## Weaknesses and next steps
+
+Weaknesses and next steps should also be included.
+
+
+# References
+
+- R Core Team (2020). R: A language and environment for statistical computing. R, Foundation for Statistical Computing, Vienna, Austria. URL, https://www.R-project.org/.
+
+- Tausanovitch, Chris and Lynn Vavreck. 2020. Democracy Fund + UCLA Nationscape, October 10-17, 2019 (version 20200814). Retrieved from https://www.voterstudygroup.org/publication/nationscape-data-set.
+
+- Steven Ruggles, Sarah Flood, Ronald Goeken, Josiah Grover, Erin Meyer, Jose Pacas and Matthew Sobek. IPUMS USA: Version 10.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D010.V10.0
+
+- Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+
+- Hadley Wickham and Evan Miller (2020). haven: Import and Export 'SPSS', 'Stata' and 'SAS' Files. R package
+  version 2.3.1. https://CRAN.R-project.org/package=haven
+
+- Hadley Wickham, Romain François, Lionel Henry and Kirill Müller (2020). dplyr: A Grammar of Data
+  Manipulation. R package version 1.0.2. https://CRAN.R-project.org/package=dplyr
+  
+- H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
